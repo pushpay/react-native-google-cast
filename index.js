@@ -74,6 +74,16 @@ export default {
   }) {
     return GoogleCast.castMedia(params)
   },
+
+  getCurrentMedia(): Promise<{
+    mediaUrl: string,
+    title?: string,
+    subtitle?: string,
+    customData?: Object,
+  }> {
+    return GoogleCast.getCurrentMedia();
+  },
+
   /**
    * Ends the current session.
    *
@@ -104,7 +114,7 @@ export default {
    *
    * @param {number} playPosition
    */
-  seek(playPosition: number) {
+  seek(playPosition: number): Promise {
     return GoogleCast.seek(playPosition)
   },
   launchExpandedControls: GoogleCast.launchExpandedControls,
