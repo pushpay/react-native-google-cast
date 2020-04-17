@@ -64,6 +64,7 @@ declare module 'react-native-google-cast' {
     launchExpandedControls(): void
     showIntroductoryOverlay(): void
     setVolume(volume: number): void
+    setPlaybackRate(rate: number): void
     initChannel(channel: string): Promise<boolean>
     sendMessage(message: string, namespace: string): Promise<boolean>
     showCastPicker(): void

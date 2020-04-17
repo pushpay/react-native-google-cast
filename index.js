@@ -122,6 +122,9 @@ export default {
   setVolume(volume: number) {
     return GoogleCast.setVolume(volume)
   },
+  setPlaybackRate(rate: number) {
+    return GoogleCast.setPlaybackRate(rate)
+  },
   initChannel(namespace: string) {
     return GoogleCast.initChannel(namespace)
   },
