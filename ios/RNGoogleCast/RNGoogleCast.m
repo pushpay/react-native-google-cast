@@ -8,6 +8,7 @@
 @implementation RNGoogleCast {
   bool hasListeners;
   NSMutableDictionary *channels;
+  NSMutableDictionary<NSString*, RCTResponseSenderBlock> *seekRequests;
   GCKCastSession *castSession;
   GCKMediaInformation *mediaInfo;
   bool playbackStarted;
@@ -27,6 +28,10 @@ RCT_EXPORT_MODULE();
 - (instancetype)init {
   self = [super init];
   channels = [[NSMutableDictionary alloc] init];
+  seekRequests = [[NSMutableDictionary alloc] init];
+  if([GCKCastContext.sharedInstance castState] == GCKCastStateConnected) {
+    castSession = [[GCKCastContext.sharedInstance sessionManager] currentCastSession];
+  }
   return self;
 }
 
@@ -127,7 +132,7 @@ RCT_EXPORT_METHOD(toggleSubtitles: (BOOL) enabled languageCode:(NSString *) lang
   if (mediaTracks == nil || [mediaTracks count] == 0) {
     return;
   }
-  
+
   for(GCKMediaTrack *track in mediaTracks) {
     if (track != nil && [[track languageCode] isEqualToString:languageToSelect]) {
       [castSession.remoteMediaClient setActiveTrackIDs:@[@(track.identifier)]];
@@ -265,6 +270,46 @@ RCT_EXPORT_METHOD(castMedia: (NSDictionary *)params
   }
 }
 
+
+RCT_REMAP_METHOD(getCurrentMedia,
+                 resolve: (RCTPromiseResolveBlock) resolve
+                 reject: (RCTPromiseRejectBlock) reject) {
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (self->castSession == nil) {
+      resolve(nil);
+      return;
+    }
+    GCKMediaInformation *mediaInfo = self->castSession.remoteMediaClient.mediaStatus.mediaInformation;
+    if (mediaInfo == nil) {
+      resolve(nil);
+      return;
+    }
+
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    NSString *title = [mediaInfo.metadata stringForKey:kGCKMetadataKeyTitle];
+    if (title) {
+      dict[@"title"] = title;
+    }
+    NSString *subtitle = [mediaInfo.metadata stringForKey:kGCKMetadataKeySubtitle];
+    if (subtitle) {
+      dict[@"subtitle"] = subtitle;
+    }
+    dict[@"mediaUrl"] = mediaInfo.contentID;
+    id customData = mediaInfo.customData;
+    if (customData) {
+      dict[@"customData"] = customData;
+    }
+    resolve(dict);
+  });
+}
+
+RCT_EXPORT_METHOD(setPlaybackRate : (float)rate) {
+    if (castSession) {
+        [castSession.remoteMediaClient setPlaybackRate:rate];
+    }
+}
+
 RCT_EXPORT_METHOD(play) {
   if (castSession) {
     [castSession.remoteMediaClient play];
@@ -283,11 +328,41 @@ RCT_EXPORT_METHOD(stop) {
   }
 }
 
-RCT_EXPORT_METHOD(seek : (int)playPosition) {
-  if (castSession) {
-    [castSession.remoteMediaClient seekToTimeInterval:playPosition];
-  }
+RCT_EXPORT_METHOD(seek: (int)playPosition
+               resolve: (RCTPromiseResolveBlock) resolve
+                reject: (RCTPromiseRejectBlock) reject) {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+      if (self->castSession) {
+        GCKRequest *request = [self->castSession.remoteMediaClient seekToTimeInterval:playPosition];
+        request.delegate = self;
+        self->seekRequests[[NSString stringWithFormat: @"%ld", (long)request.requestID]] = resolve;
+      } else {
+        resolve(nil);
+      }
+  });
 }
+
+- (void)completeSeek: (GCKRequest *)request {
+  NSString *key = [NSString stringWithFormat: @"%ld", (long)request.requestID];
+  RCTPromiseResolveBlock resolve = seekRequests[key];
+  resolve(nil);
+  [seekRequests removeObjectForKey:key];
+}
+#pragma mark - GCKRequestDelegate
+
+- (void)requestDidComplete:(GCKRequest *)request {
+  [self completeSeek:request];
+  }
+
+- (void)request:(GCKRequest *)request didFailWithError:(GCKError *)error {
+  [self completeSeek:request];
+}
+
+- (void)request:(GCKRequest *)request didAbortWithReason:(GCKRequestAbortReason)abortReason {
+  [self completeSeek:request];
+}
+
 RCT_EXPORT_METHOD(setVolume : (float)volume) {
     if (castSession) {
         [castSession.remoteMediaClient setStreamVolume:volume];

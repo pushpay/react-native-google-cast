@@ -19,6 +19,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.MediaTrack;
 import com.google.android.gms.cast.framework.CastContext;
@@ -161,6 +162,53 @@ public class GoogleCastModule
                 Log.e(REACT_CLASS, "Casting media... ");
             }
         });
+    }
+
+    @ReactMethod
+    public void getCurrentMedia(final Promise promise) {
+      if (mCastSession != null) {
+        getReactApplicationContext().runOnUiQueueThread(new Runnable() {
+          @Override
+          public void run() {
+            RemoteMediaClient client = mCastSession.getRemoteMediaClient();
+            if (client == null) {
+              return;
+            }
+            try {
+              if (client.getCurrentItem() == null) {
+                promise.resolve(null);
+                return;
+              }
+              MediaInfo media = client.getCurrentItem().getMedia();
+              WritableMap params = Arguments.createMap();
+              params.putString("title", media.getMetadata().getString(MediaMetadata.KEY_TITLE));
+              params.putString("subtitle", media.getMetadata().getString(MediaMetadata.KEY_SUBTITLE));
+              params.putString("mediaUrl", media.getContentId());
+              params.putMap("customData", WritableMapUtils.toWritableMap(media.getCustomData()));
+              promise.resolve(params);
+            } catch (Exception e) {
+              promise.reject(e);
+            }
+
+          }
+        });
+      }
+    }
+
+    @ReactMethod
+    public void setPlaybackRate(final double rate) {
+      if (mCastSession != null) {
+        getReactApplicationContext().runOnUiQueueThread(new Runnable() {
+          @Override
+          public void run() {
+            RemoteMediaClient client = mCastSession.getRemoteMediaClient();
+            if (client == null) {
+              return;
+            }
+            client.setPlaybackRate(rate);
+          }
+        });
+      }
     }
 
     public static void initializeCast(Context context){
@@ -314,19 +362,26 @@ public class GoogleCastModule
     }
 
     @ReactMethod
-    public void seek(final int position) {
+    public void seek(final int position, final Promise promise) {
         if (mCastSession != null) {
             getReactApplicationContext().runOnUiQueueThread(new Runnable() {
                 @Override
                 public void run() {
                     RemoteMediaClient client = mCastSession.getRemoteMediaClient();
                     if (client == null) {
+                        promise.resolve(null);
                         return;
                     }
-
-                    client.seek(position * 1000);
+                    client.seek(position * 1000).setResultCallback(new ResultCallback<RemoteMediaClient.MediaChannelResult>() {
+                        @Override
+                        public void onResult(@NonNull RemoteMediaClient.MediaChannelResult mediaChannelResult) {
+                            promise.resolve(null);
+                        }
+                    });
                 }
             });
+        } else {
+            promise.resolve(null);
         }
     }
 
