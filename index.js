@@ -25,6 +25,14 @@ type CastState =
   | 'Connecting'
   | 'Connected'
 
+type MediaStatus = {
+  streamDuration: number,
+  streamPosition: number,
+  playerState: number,
+  idleReason: number,
+  muted: boolean,
+}
+
 type TextTrackStyle = {
   backgroundColor?: string,
   edgeColor?: string,
@@ -57,6 +65,9 @@ export default {
           state
         ],
     )
+  },
+  getMediaStatus(): Promise<MediaStatus> {
+    return GoogleCast.getMediaStatus();
   },
   castMedia(params: {
     mediaUrl: string,

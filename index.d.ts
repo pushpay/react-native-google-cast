@@ -30,6 +30,14 @@ declare module 'react-native-google-cast' {
     textTrackStyle?: TextTrackStyle
   }
 
+  export type MediaStatus = {
+    streamDuration: number,
+    streamPosition: number,
+    playerState: number,
+    idleReason: number,
+    muted: boolean,
+  }
+
   export type TextTrackStyle = {
     backgroundColor?: string
     edgeColor?: string
@@ -54,6 +62,7 @@ declare module 'react-native-google-cast' {
   const GoogleCast: {
     getCastDevice(): Promise<CastDevice>
     getCastState(): Promise<CastState>
+    getMediaStatus(): Promise<MediaStatus>
     castMedia(options: CastOptions): void
     getCurrentMedia(): Promise<CastOptions>
     endSession(stopCast?: boolean): Promise<boolean>

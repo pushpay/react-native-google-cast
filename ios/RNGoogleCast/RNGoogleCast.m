@@ -272,8 +272,8 @@ RCT_EXPORT_METHOD(castMedia: (NSDictionary *)params
 
 
 RCT_REMAP_METHOD(getCurrentMedia,
-                 resolve: (RCTPromiseResolveBlock) resolve
-                 reject: (RCTPromiseRejectBlock) reject) {
+                 getCurrentMediaResolver: (RCTPromiseResolveBlock) resolve
+                                rejecter: (RCTPromiseRejectBlock) reject) {
 
   dispatch_async(dispatch_get_main_queue(), ^{
     if (self->castSession == nil) {
@@ -304,6 +304,39 @@ RCT_REMAP_METHOD(getCurrentMedia,
   });
 }
 
+RCT_REMAP_METHOD(getMediaStatus,
+                 getMediaStatusResolver: (RCTPromiseResolveBlock) resolve
+                               rejecter: (RCTPromiseRejectBlock) reject) {
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (self->castSession == nil) {
+      resolve(nil);
+      return;
+    }
+
+    GCKMediaStatus *mediaStatus = self->castSession.remoteMediaClient.mediaStatus;
+    if (mediaStatus == nil) {
+      resolve(nil);
+      return;
+    }
+
+    double position = mediaStatus.streamPosition;
+    double duration = mediaStatus.mediaInformation.streamDuration;
+
+    NSDictionary *status = @{
+      @"playerState": @(mediaStatus.playerState),
+      @"idleReason": @(mediaStatus.idleReason),
+      @"muted": @(mediaStatus.isMuted),
+      @"streamPosition": isinf(position) || isnan(position) ? [NSNull null] : @(position),
+      @"streamDuration": isinf(duration) || isnan(duration) ? [NSNull null] : @(duration),
+    };
+
+    resolve(status);
+  });
+}
+
+
+
 RCT_EXPORT_METHOD(setPlaybackRate : (float)rate) {
     if (castSession) {
         [castSession.remoteMediaClient setPlaybackRate:rate];
@@ -329,8 +362,8 @@ RCT_EXPORT_METHOD(stop) {
 }
 
 RCT_EXPORT_METHOD(seek: (int)playPosition
-               resolve: (RCTPromiseResolveBlock) resolve
-                reject: (RCTPromiseRejectBlock) reject) {
+               resolver: (RCTPromiseResolveBlock) resolve
+               rejecter: (RCTPromiseRejectBlock) reject) {
 
     dispatch_async(dispatch_get_main_queue(), ^{
       if (self->castSession) {

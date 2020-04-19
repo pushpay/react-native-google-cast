@@ -255,6 +255,25 @@ public class GoogleCastModule
         });
     }
 
+    @ReactMethod
+    public void getMediaStatus(final Promise promise) {
+        getReactApplicationContext().runOnUiQueueThread(new Runnable() {
+            @Override
+            public void run() {
+                if (CAST_AVAILABLE) {
+                    MediaStatus mediaStatus = getMediaStatus();
+                    if (mediaStatus == null) {
+                        promise.resolve(null);
+                        return;
+                    }
+                    promise.resolve(WritableMapUtils.fromMediaStatus(mediaStatus));
+                } else {
+                    promise.reject(E_CAST_NOT_AVAILABLE, GOOGLE_CAST_NOT_AVAILABLE_MESSAGE);
+                }
+            }
+        });
+    }
+
 
     @ReactMethod
     public void initChannel(final String namespace, final Promise promise) {

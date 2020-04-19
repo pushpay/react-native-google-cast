@@ -1,5 +1,7 @@
 package com.reactnative.googlecast;
 
+import android.support.annotation.NonNull;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
@@ -12,6 +14,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaStatus;
 
 public class WritableMapUtils {
   public static WritableMap toWritableMap(JSONObject json) {
@@ -58,5 +63,25 @@ public class WritableMapUtils {
       list.add(value);
     }
     return list;
+  }
+
+  @NonNull
+  public static WritableMap fromMediaStatus(MediaStatus mediaStatus) {
+    // needs to be constructed for every message from scratch because reusing a
+    // message fails with "Map already consumed"
+    WritableMap map = Arguments.createMap();
+    map.putInt("playerState", mediaStatus.getPlayerState());
+    map.putInt("idleReason", mediaStatus.getIdleReason());
+    map.putBoolean("muted", mediaStatus.isMute());
+    map.putInt("streamPosition", (int)(mediaStatus.getStreamPosition() / 1000));
+
+    MediaInfo info = mediaStatus.getMediaInfo();
+    if (info != null) {
+      map.putInt("streamDuration", (int) (info.getStreamDuration() / 1000));
+    }
+
+    WritableMap message = Arguments.createMap();
+    message.putMap("mediaStatus", map);
+    return message;
   }
 }
