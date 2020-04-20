@@ -67,8 +67,6 @@ public class WritableMapUtils {
 
   @NonNull
   public static WritableMap fromMediaStatus(MediaStatus mediaStatus) {
-    // needs to be constructed for every message from scratch because reusing a
-    // message fails with "Map already consumed"
     WritableMap map = Arguments.createMap();
     map.putInt("playerState", mediaStatus.getPlayerState());
     map.putInt("idleReason", mediaStatus.getIdleReason());
@@ -79,9 +77,15 @@ public class WritableMapUtils {
     if (info != null) {
       map.putInt("streamDuration", (int) (info.getStreamDuration() / 1000));
     }
+    return map;
+  }
 
-    WritableMap message = Arguments.createMap();
-    message.putMap("mediaStatus", map);
-    return message;
+  @NonNull
+  public static WritableMap toStatusUpdatedEvent(MediaStatus mediaStatus) {
+    // needs to be constructed for every message from scratch because reusing a
+    // message fails with "Map already consumed"
+    WritableMap map = Arguments.createMap();
+    map.putMap("mediaStatus", fromMediaStatus(mediaStatus));
+    return map;
   }
 }

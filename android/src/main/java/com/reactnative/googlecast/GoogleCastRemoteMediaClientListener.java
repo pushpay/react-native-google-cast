@@ -37,19 +37,19 @@ public class GoogleCastRemoteMediaClientListener
         }
 
         module.emitMessageToRN(GoogleCastModule.MEDIA_STATUS_UPDATED,
-            WritableMapUtils.fromMediaStatus(mediaStatus));
+            WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
 
         if (!playbackStarted &&
             mediaStatus.getPlayerState() == MediaStatus.PLAYER_STATE_PLAYING) {
           module.emitMessageToRN(GoogleCastModule.MEDIA_PLAYBACK_STARTED,
-              WritableMapUtils.fromMediaStatus(mediaStatus));
+              WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
           playbackStarted = true;
         }
 
         if (!playbackEnded &&
             mediaStatus.getIdleReason() == MediaStatus.IDLE_REASON_FINISHED) {
           module.emitMessageToRN(GoogleCastModule.MEDIA_PLAYBACK_ENDED,
-              WritableMapUtils.fromMediaStatus(mediaStatus));
+              WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
           playbackEnded = true;
         }
       }
