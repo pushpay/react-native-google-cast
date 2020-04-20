@@ -29,9 +29,6 @@ RCT_EXPORT_MODULE();
   self = [super init];
   channels = [[NSMutableDictionary alloc] init];
   seekRequests = [[NSMutableDictionary alloc] init];
-  if([GCKCastContext.sharedInstance castState] == GCKCastStateConnected) {
-    castSession = [[GCKCastContext.sharedInstance sessionManager] currentCastSession];
-  }
   return self;
 }
 
@@ -75,6 +72,10 @@ RCT_EXPORT_MODULE();
   hasListeners = YES;
   // Set up any upstream listeners or background tasks as necessary
   dispatch_async(dispatch_get_main_queue(), ^{
+    if([GCKCastContext.sharedInstance castState] == GCKCastStateConnected) {
+      self->castSession = [[GCKCastContext.sharedInstance sessionManager] currentCastSession];
+      [castSession.remoteMediaClient addListener:self];
+    }
     [GCKCastContext.sharedInstance.sessionManager addListener:self];
   });
 }
