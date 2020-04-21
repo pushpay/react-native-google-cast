@@ -32,6 +32,8 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.common.images.WebImage;
 import com.reactnative.googlecast.GoogleCastButtonManager;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -182,9 +184,19 @@ public class GoogleCastModule
               MediaInfo media = client.getCurrentItem().getMedia();
               WritableMap params = Arguments.createMap();
               params.putString("title", media.getMetadata().getString(MediaMetadata.KEY_TITLE));
-              params.putString("subtitle", media.getMetadata().getString(MediaMetadata.KEY_SUBTITLE));
+              String subtitle = media.getMetadata().getString(MediaMetadata.KEY_SUBTITLE);
+              if (subtitle != null) {
+                params.putString("subtitle", media.getMetadata().getString(MediaMetadata.KEY_SUBTITLE));
+              }
               params.putString("mediaUrl", media.getContentId());
-              params.putMap("customData", WritableMapUtils.toWritableMap(media.getCustomData()));
+              JSONObject customData = media.getCustomData();
+              if (customData != null) {
+                params.putMap("customData", WritableMapUtils.toWritableMap(customData));
+              }
+              if (media.getMetadata().getImages() != null && media.getMetadata().getImages().size() > 0) {
+                  WebImage image = media.getMetadata().getImages().get(0);
+                  params.putString("imageUrl", image.getUrl().toString());
+              }
               promise.resolve(params);
             } catch (Exception e) {
               promise.reject(e);

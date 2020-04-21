@@ -71,6 +71,7 @@ public class WritableMapUtils {
     map.putInt("playerState", mediaStatus.getPlayerState());
     map.putInt("idleReason", mediaStatus.getIdleReason());
     map.putBoolean("muted", mediaStatus.isMute());
+    map.putDouble("playbackRate", mediaStatus.getPlaybackRate());
     map.putInt("streamPosition", (int)(mediaStatus.getStreamPosition() / 1000));
 
     MediaInfo info = mediaStatus.getMediaInfo();

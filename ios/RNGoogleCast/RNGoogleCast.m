@@ -301,6 +301,10 @@ RCT_REMAP_METHOD(getCurrentMedia,
     if (customData) {
       dict[@"customData"] = customData;
     }
+    if (mediaInfo.metadata.images != nil && mediaInfo.metadata.images.count > 0) {
+      GCKImage *image = mediaInfo.metadata.images[0];
+      dict[@"imageUrl"] = image.URL.absoluteString;
+    }
     resolve(dict);
   });
 }
@@ -320,18 +324,7 @@ RCT_REMAP_METHOD(getMediaStatus,
       resolve(nil);
       return;
     }
-
-    double position = mediaStatus.streamPosition;
-    double duration = mediaStatus.mediaInformation.streamDuration;
-
-    NSDictionary *status = @{
-      @"playerState": @(mediaStatus.playerState),
-      @"idleReason": @(mediaStatus.idleReason),
-      @"muted": @(mediaStatus.isMuted),
-      @"streamPosition": isinf(position) || isnan(position) ? [NSNull null] : @(position),
-      @"streamDuration": isinf(duration) || isnan(duration) ? [NSNull null] : @(duration),
-    };
-
+    NSDictionary *status = [self getMediaStatusDictionary:mediaStatus];
     resolve(status);
   });
 }
@@ -383,6 +376,26 @@ RCT_EXPORT_METHOD(seek: (int)playPosition
   resolve(nil);
   [seekRequests removeObjectForKey:key];
 }
+
+
+- (NSDictionary *)getMediaStatusDictionary:(GCKMediaStatus *)mediaStatus {
+
+  double position = mediaStatus.streamPosition;
+  double duration = mediaStatus.mediaInformation.streamDuration;
+
+  NSDictionary *status = @{
+    @"playerState": @(mediaStatus.playerState),
+    @"idleReason": @(mediaStatus.idleReason),
+    @"muted": @(mediaStatus.isMuted),
+    @"playbackRate": @(mediaStatus.playbackRate),
+    @"streamPosition": isinf(position) || isnan(position) ? [NSNull null] : @(position),
+    @"streamDuration": isinf(duration) || isnan(duration) ? [NSNull null] : @(duration),
+  };
+
+  return status;
+}
+
+
 #pragma mark - GCKRequestDelegate
 
 - (void)requestDidComplete:(GCKRequest *)request {
@@ -461,16 +474,7 @@ RCT_EXPORT_METHOD(setVolume : (float)volume) {
     playbackEnded = false;
   }
 
-  double position = mediaStatus.streamPosition;
-  double duration = mediaStatus.mediaInformation.streamDuration;
-
-  NSDictionary *status = @{
-    @"playerState": @(mediaStatus.playerState),
-    @"idleReason": @(mediaStatus.idleReason),
-    @"muted": @(mediaStatus.isMuted),
-    @"streamPosition": isinf(position) || isnan(position) ? [NSNull null] : @(position),
-    @"streamDuration": isinf(duration) || isnan(duration) ? [NSNull null] : @(duration),
-  };
+  NSDictionary *status = [self getMediaStatusDictionary:mediaStatus];
 
   [self sendEventWithName:MEDIA_STATUS_UPDATED body:@{@"mediaStatus":status}];
 
