@@ -30,6 +30,14 @@ declare module 'react-native-google-cast' {
     textTrackStyle?: TextTrackStyle
   }
 
+  export type MediaStatus = {
+    streamDuration: number,
+    streamPosition: number,
+    playerState: number,
+    idleReason: number,
+    muted: boolean,
+  }
+
   export type TextTrackStyle = {
     backgroundColor?: string
     edgeColor?: string
@@ -54,22 +62,25 @@ declare module 'react-native-google-cast' {
   const GoogleCast: {
     getCastDevice(): Promise<CastDevice>
     getCastState(): Promise<CastState>
+    getMediaStatus(): Promise<MediaStatus>
     castMedia(options: CastOptions): void
+    getCurrentMedia(): Promise<CastOptions>
     endSession(stopCast?: boolean): Promise<boolean>
     play(): void
     pause(): void
     stop(): void
-    seek(playPosition: number): void
+    seek(playPosition: number): Promise<void>
     launchExpandedControls(): void
     showIntroductoryOverlay(): void
     setVolume(volume: number): void
+    setPlaybackRate(rate: number): void
     initChannel(channel: string): Promise<boolean>
     sendMessage(message: string, namespace: string): Promise<boolean>
     showCastPicker(): void
     toggleSubtitles(enabled: boolean, languageCode?: string): Promise<void>
 
     EventEmitter: EventEmitter
-    
+
     SESSION_STARTING: string
     SESSION_STARTED: string
     SESSION_START_FAILED: string
@@ -78,12 +89,12 @@ declare module 'react-native-google-cast' {
     SESSION_RESUMED: string
     SESSION_ENDING: string
     SESSION_ENDED: string
-    
+
     MEDIA_STATUS_UPDATED: string
     MEDIA_PLAYBACK_STARTED: string
     MEDIA_PLAYBACK_ENDED: string
     MEDIA_PROGRESS_UPDATED: string
-    
+
     CHANNEL_CONNECTED: string
     CHANNEL_DISCONNECTED: string
     CHANNEL_MESSAGE_RECEIVED: string

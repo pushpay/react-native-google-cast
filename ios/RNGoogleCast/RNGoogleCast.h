@@ -25,5 +25,5 @@ static NSString *const DEFAULT_SUBTITLES_LANGUAGE = @"en";
 @interface RNGoogleCast
     : RCTEventEmitter <RCTBridgeModule, GCKCastDeviceStatusListener,
                        GCKSessionManagerListener, GCKRemoteMediaClientListener,
-                       GCKGenericChannelDelegate>
+                       GCKGenericChannelDelegate, GCKRequestDelegate>
 @end
