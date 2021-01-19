@@ -37,43 +37,23 @@ public class GoogleCastRemoteMediaClientListener
         }
 
         module.emitMessageToRN(GoogleCastModule.MEDIA_STATUS_UPDATED,
-                               prepareMessage(mediaStatus));
+            WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
 
         if (!playbackStarted &&
             mediaStatus.getPlayerState() == MediaStatus.PLAYER_STATE_PLAYING) {
           module.emitMessageToRN(GoogleCastModule.MEDIA_PLAYBACK_STARTED,
-                                 prepareMessage(mediaStatus));
+              WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
           playbackStarted = true;
         }
 
         if (!playbackEnded &&
             mediaStatus.getIdleReason() == MediaStatus.IDLE_REASON_FINISHED) {
           module.emitMessageToRN(GoogleCastModule.MEDIA_PLAYBACK_ENDED,
-                                 prepareMessage(mediaStatus));
+              WritableMapUtils.toStatusUpdatedEvent(mediaStatus));
           playbackEnded = true;
         }
       }
     });
-  }
-
-  @NonNull
-  private WritableMap prepareMessage(MediaStatus mediaStatus) {
-    // needs to be constructed for every message from scratch because reusing a
-    // message fails with "Map already consumed"
-    WritableMap map = Arguments.createMap();
-    map.putInt("playerState", mediaStatus.getPlayerState());
-    map.putInt("idleReason", mediaStatus.getIdleReason());
-    map.putBoolean("muted", mediaStatus.isMute());
-    map.putInt("streamPosition", (int)(mediaStatus.getStreamPosition() / 1000));
-
-    MediaInfo info = mediaStatus.getMediaInfo();
-    if (info != null) {
-      map.putInt("streamDuration", (int) (info.getStreamDuration() / 1000));
-    }
-
-    WritableMap message = Arguments.createMap();
-    message.putMap("mediaStatus", map);
-    return message;
   }
 
   @Override

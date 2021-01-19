@@ -25,6 +25,14 @@ type CastState =
   | 'Connecting'
   | 'Connected'
 
+type MediaStatus = {
+  streamDuration: number,
+  streamPosition: number,
+  playerState: number,
+  idleReason: number,
+  muted: boolean,
+}
+
 type TextTrackStyle = {
   backgroundColor?: string,
   edgeColor?: string,
@@ -58,6 +66,9 @@ export default {
         ],
     )
   },
+  getMediaStatus(): Promise<MediaStatus> {
+    return GoogleCast.getMediaStatus();
+  },
   castMedia(params: {
     mediaUrl: string,
     title?: string,
@@ -74,6 +85,16 @@ export default {
   }) {
     return GoogleCast.castMedia(params)
   },
+
+  getCurrentMedia(): Promise<{
+    mediaUrl: string,
+    title?: string,
+    subtitle?: string,
+    customData?: Object,
+  }> {
+    return GoogleCast.getCurrentMedia();
+  },
+
   /**
    * Ends the current session.
    *
@@ -104,13 +125,16 @@ export default {
    *
    * @param {number} playPosition
    */
-  seek(playPosition: number) {
+  seek(playPosition: number): Promise {
     return GoogleCast.seek(playPosition)
   },
   launchExpandedControls: GoogleCast.launchExpandedControls,
   showIntroductoryOverlay: GoogleCast.showIntroductoryOverlay,
   setVolume(volume: number) {
     return GoogleCast.setVolume(volume)
+  },
+  setPlaybackRate(rate: number) {
+    return GoogleCast.setPlaybackRate(rate)
   },
   initChannel(namespace: string) {
     return GoogleCast.initChannel(namespace)
