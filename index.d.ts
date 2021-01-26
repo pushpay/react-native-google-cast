@@ -36,6 +36,7 @@ declare module 'react-native-google-cast' {
     playerState: number,
     idleReason: number,
     muted: boolean,
+    playbackRate: number,
   }
 
   export type TextTrackStyle = {
