@@ -31,11 +31,12 @@ declare module 'react-native-google-cast' {
   }
 
   export type MediaStatus = {
-    streamDuration: number,
-    streamPosition: number,
-    playerState: number,
-    idleReason: number,
-    muted: boolean,
+    streamDuration: number
+    streamPosition: number
+    playerState: number
+    idleReason: number
+    muted: boolean
+    playbackRate: number
   }
 
   export type TextTrackStyle = {

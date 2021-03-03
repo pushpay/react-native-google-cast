@@ -31,6 +31,7 @@ type MediaStatus = {
   playerState: number,
   idleReason: number,
   muted: boolean,
+  playbackRate: number,
 }
 
 type TextTrackStyle = {
@@ -60,14 +61,14 @@ export default {
   },
   getCastState(): Promise<CastState> {
     return GoogleCast.getCastState().then(
-      state =>
+      (state) =>
         ['NoDevicesAvailable', 'NotConnected', 'Connecting', 'Connected'][
           state
         ],
     )
   },
   getMediaStatus(): Promise<MediaStatus> {
-    return GoogleCast.getMediaStatus();
+    return GoogleCast.getMediaStatus()
   },
   castMedia(params: {
     mediaUrl: string,
@@ -92,7 +93,7 @@ export default {
     subtitle?: string,
     customData?: Object,
   }> {
-    return GoogleCast.getCurrentMedia();
+    return GoogleCast.getCurrentMedia()
   },
 
   /**
@@ -142,7 +143,7 @@ export default {
   sendMessage(namespace: string, message: string) {
     return GoogleCast.sendMessage(message, namespace)
   },
-  showCastPicker(){
+  showCastPicker() {
     GoogleCast.showCastPicker()
   },
 
